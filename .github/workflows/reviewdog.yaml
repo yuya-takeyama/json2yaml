@@ -3,8 +3,8 @@ name: reviewdog
 on:
   pull_request:
     paths:
-      - "**.go"
-      - ".github/workflows/reviewdog.yaml"
+      - '**.go'
+      - '.github/workflows/reviewdog.yaml'
 
 jobs:
   golangci-lint:
