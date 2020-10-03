@@ -43,7 +43,7 @@ func main() {
 
 	r, err := argf.From(args)
 	if err != nil {
-		errorf("ARGF error: %s", err)
+		errorf("file loading error: %s", err)
 		os.Exit(1)
 	}
 
