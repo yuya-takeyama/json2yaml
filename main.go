@@ -33,6 +33,7 @@ func main() {
 		if flagsErr, ok := err.(*flags.Error); ok {
 			if flagsErr.Type == flags.ErrHelp {
 				parser.WriteHelp(os.Stderr)
+
 				return
 			}
 		}
@@ -57,6 +58,7 @@ func main() {
 func json2yaml(r io.Reader, stdout io.Writer, opts options) error {
 	if opts.ShowVersion {
 		_, _ = io.WriteString(stdout, fmt.Sprintf("%s v%s, build %s\n", appName, version, gitCommit))
+
 		return nil
 	}
 
