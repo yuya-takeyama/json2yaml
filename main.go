@@ -11,17 +11,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const AppName = "json2yaml"
+const appName = "json2yaml"
 
-type Options struct {
+type options struct {
 	ShowVersion bool `short:"v" long:"version" description:"Show version"`
 }
 
-var opts Options
+var opts options
 
 func main() {
 	parser := flags.NewParser(&opts, flags.Default)
-	parser.Name = AppName
+	parser.Name = appName
 	parser.Usage = "[OPTIONS] FILES..."
 
 	args, err := parser.Parse()
@@ -41,9 +41,9 @@ func main() {
 	}
 }
 
-func json2yaml(r io.Reader, stdout io.Writer, stderr io.Writer, opts Options) error {
+func json2yaml(r io.Reader, stdout io.Writer, stderr io.Writer, opts options) error {
 	if opts.ShowVersion {
-		io.WriteString(stdout, fmt.Sprintf("%s v%s, build %s\n", AppName, Version, GitCommit))
+		io.WriteString(stdout, fmt.Sprintf("%s v%s, build %s\n", appName, Version, GitCommit))
 		return nil
 	}
 
