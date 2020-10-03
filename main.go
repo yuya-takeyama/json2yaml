@@ -13,6 +13,11 @@ import (
 
 const appName = "json2yaml"
 
+var (
+	version   string = ""
+	gitCommit        = ""
+)
+
 type options struct {
 	ShowVersion bool `short:"v" long:"version" description:"Show version"`
 }
@@ -42,7 +47,7 @@ func main() {
 
 func json2yaml(r io.Reader, stdout io.Writer, opts options) error {
 	if opts.ShowVersion {
-		_, _ = io.WriteString(stdout, fmt.Sprintf("%s v%s, build %s\n", appName, Version, GitCommit))
+		_, _ = io.WriteString(stdout, fmt.Sprintf("%s v%s, build %s\n", appName, version, gitCommit))
 		return nil
 	}
 
