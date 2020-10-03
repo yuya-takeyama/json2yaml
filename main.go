@@ -8,7 +8,7 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/yuya-takeyama/argf"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const AppName = "json2yaml"
