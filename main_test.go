@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"os/exec"
 	"testing"
 )
@@ -19,7 +20,7 @@ func TestSingleFileWithSingleJSON(t *testing.T) {
 
 	expected := "---\nfoo: FOO\n"
 	if stdout.String() != expected {
-		t.Errorf("stdout doen't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
+		t.Errorf("stdout doesn't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
 	}
 
 	if stderr.String() != "" {
@@ -46,7 +47,7 @@ bar: BAR
 baz: BAZ
 `
 	if stdout.String() != expected {
-		t.Errorf("stdout doen't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
+		t.Errorf("stdout doesn't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
 	}
 
 	if stderr.String() != "" {
@@ -73,7 +74,7 @@ foo: FOO
 foo: FOO
 `
 	if stdout.String() != expected {
-		t.Errorf("stdout doen't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
+		t.Errorf("stdout doesn't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
 	}
 
 	if stderr.String() != "" {
@@ -112,7 +113,7 @@ bar: BAR
 baz: BAZ
 `
 	if stdout.String() != expected {
-		t.Errorf("stdout doen't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
+		t.Errorf("stdout doesn't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
 	}
 
 	if stderr.String() != "" {
@@ -133,6 +134,110 @@ func TestVersion(t *testing.T) {
 	}
 
 	if stdout.String() != expected {
-		t.Errorf("stdout doen't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
+		t.Errorf("stdout doesn't match\nExpected:\n%s\nActual:\n%s", expected, stdout.String())
+	}
+}
+
+func TestHelp(t *testing.T) {
+	cmd := exec.Command("go", "run", "main.go", "--help")
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	expected := `Usage:
+  json2yaml [OPTIONS] FILES...
+
+Application Options:
+  -v, --version  Show version
+
+Help Options:
+  -h, --help     Show this help message
+`
+	if err := cmd.Run(); err != nil {
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) {
+			t.Errorf("failed: %v", err)
+		}
+	}
+
+	if stdout.String() != "" {
+		t.Errorf("stdout should be empty")
+	}
+
+	if stderr.String() != expected {
+		t.Errorf("stderr doesn't match\nExpected: \n%s\nActual:\n%s", expected, stderr.String())
+	}
+}
+
+func TestUnknownOption(t *testing.T) {
+	cmd := exec.Command("go", "run", "main.go", "--foo")
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	expected := "json2yaml: flag parse error: unknown flag `foo'\nexit status 1\n"
+	if err := cmd.Run(); err != nil {
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) {
+			t.Errorf("failed: %v", err)
+		}
+	}
+
+	if stdout.String() != "" {
+		t.Errorf("stdout should be empty")
+	}
+
+	if stderr.String() != expected {
+		t.Errorf("stderr doesn't match\nExpected: \n%s\nActual:\n%s", expected, stderr.String())
+	}
+}
+
+func TestFileNotExists(t *testing.T) {
+	cmd := exec.Command("go", "run", "main.go", "not_exist.json")
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	expected := "json2yaml: file loading error: open not_exist.json: no such file or directory\nexit status 1\n"
+	if err := cmd.Run(); err != nil {
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) {
+			t.Errorf("failed: %v", err)
+		}
+	}
+
+	if stdout.String() != "" {
+		t.Errorf("stdout should be empty")
+	}
+
+	if stderr.String() != expected {
+		t.Errorf("stderr doesn't match\nExpected: \n%s\nActual:\n%s", expected, stderr.String())
+	}
+}
+
+func TestInvalidJSON(t *testing.T) {
+	cmd := exec.Command("go", "run", "main.go", "fixtures/invalid.json")
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	expected := "json2yaml: error: invalid character '0' looking for beginning of object key string\nexit status 1\n"
+	if err := cmd.Run(); err != nil {
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) {
+			t.Errorf("failed: %v", err)
+		}
+	}
+
+	if stdout.String() != "" {
+		t.Errorf("stdout should be empty")
+	}
+
+	if stderr.String() != expected {
+		t.Errorf("stderr doesn't match\nExpected: \n%s\nActual:\n%s", expected, stderr.String())
 	}
 }

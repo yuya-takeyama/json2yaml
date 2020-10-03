@@ -24,30 +24,41 @@ type options struct {
 
 func main() {
 	var opts options
-	parser := flags.NewParser(&opts, flags.Default)
+	parser := flags.NewParser(&opts, flags.Default^flags.PrintErrors)
 	parser.Name = appName
 	parser.Usage = "[OPTIONS] FILES..."
 
 	args, err := parser.Parse()
 	if err != nil {
-		fmt.Print(err)
-		return
+		if flagsErr, ok := err.(*flags.Error); ok {
+			if flagsErr.Type == flags.ErrHelp {
+				parser.WriteHelp(os.Stderr)
+
+				return
+			}
+		}
+
+		errorf("flag parse error: %s", err)
+		os.Exit(1)
 	}
 
 	r, err := argf.From(args)
 	if err != nil {
-		panic(err)
+		errorf("file loading error: %s", err)
+		os.Exit(1)
 	}
 
 	err = json2yaml(r, os.Stdout, opts)
 	if err != nil {
-		panic(err)
+		errorf("error: %s", err)
+		os.Exit(1)
 	}
 }
 
 func json2yaml(r io.Reader, stdout io.Writer, opts options) error {
 	if opts.ShowVersion {
 		_, _ = io.WriteString(stdout, fmt.Sprintf("%s v%s, build %s\n", appName, version, gitCommit))
+
 		return nil
 	}
 
@@ -64,7 +75,7 @@ func json2yaml(r io.Reader, stdout io.Writer, opts options) error {
 
 		yml, err := yaml.Marshal(d)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		stdout.Write([]byte("---\n"))
@@ -72,4 +83,9 @@ func json2yaml(r io.Reader, stdout io.Writer, opts options) error {
 	}
 
 	return nil
+}
+
+func errorf(message string, args ...interface{}) {
+	subMessage := fmt.Sprintf(message, args...)
+	_, _ = fmt.Fprintf(os.Stderr, "json2yaml: %s\n", subMessage)
 }
